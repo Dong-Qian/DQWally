@@ -1,0 +1,20 @@
+﻿<Window x:Class="DQWally_POS.AddCustomer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DQWally_POS"
+        mc:Ignorable="d"
+        Title="AddCustomer" Height="300" Width="300" Background="Gainsboro">
+    <Grid>
+        <Label x:Name="firstName_lb" Content="First Name:" HorizontalAlignment="Left" Margin="18,30,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="lastName_lb" Content="Last Name:" HorizontalAlignment="Left" Margin="18,79,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="phoneNumber_lb" Content="Phone Number:" HorizontalAlignment="Left" Margin="18,140,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="FName_tb" HorizontalAlignment="Left" Height="23" Margin="124,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="LName_tb" HorizontalAlignment="Left" Height="23" Margin="124,83,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="PNumber_tb" HorizontalAlignment="Left" Height="23" Margin="124,140,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="Add_bn" Content="Add" HorizontalAlignment="Left" Margin="108,231,0,0" VerticalAlignment="Top" Width="75" Click="Add_bn_Click"/>
+        <Label x:Name="Error_lb" Content="" HorizontalAlignment="Left" Margin="53,188,0,0" VerticalAlignment="Top" Width="202" FontStyle="Italic" Foreground="#FFEC0404"/>
+
+    </Grid>
+</Window>

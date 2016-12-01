@@ -1,0 +1,19 @@
+﻿<Window x:Name="POS" x:Class="DQWally_POS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DQWally_POS"
+        mc:Ignorable="d"
+        Title="DQWally POS" Height="350" Width="500" Background="Gainsboro">
+    <Window.Foreground>
+        <ImageBrush/>
+    </Window.Foreground>
+    <Grid>
+        <Button x:Name="Find_btn" HorizontalAlignment="Left" Margin="269,28,0,0" VerticalAlignment="Top" Width="70" Click="Find_Click" Height="30" Content="Find"/>
+        <Label x:Name="Customer_lb" Content=" Customer Name" HorizontalAlignment="Left" Margin="21,28,0,0" VerticalAlignment="Top" FontSize="10" FontWeight="Bold" Width="90" Height="25"/>
+        <TextBox x:Name="Name_tb" HorizontalAlignment="Left" Height="35" Margin="122,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="125" FontSize="8"/>
+        <Border BorderBrush="#FF918A8A" BorderThickness="2" HorizontalAlignment="Left" Height="185" Margin="10,10,0,0" VerticalAlignment="Top" Width="353" CornerRadius="2" Visibility="Collapsed"/>
+        <Button x:Name="Add_btn" HorizontalAlignment="Left" Margin="368,29,0,0" VerticalAlignment="Top" Width="70" Click="Add_Click" Height="30" Content="Add"/>
+    </Grid>
+</Window>
