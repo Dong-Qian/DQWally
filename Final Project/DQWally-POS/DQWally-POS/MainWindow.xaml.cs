@@ -34,7 +34,8 @@ namespace DQWally_POS
 
         private void Find_Click(object sender, RoutedEventArgs e)
         {
-
+            FindCustomer find = new FindCustomer();
+            find.Show();
         }
     }
 }

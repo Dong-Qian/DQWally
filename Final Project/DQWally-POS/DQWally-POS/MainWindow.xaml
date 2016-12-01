@@ -11,7 +11,7 @@
     </Window.Foreground>
     <Grid>
         <Button x:Name="Find_btn" HorizontalAlignment="Left" Margin="269,28,0,0" VerticalAlignment="Top" Width="70" Click="Find_Click" Height="30" Content="Find"/>
-        <Label x:Name="Customer_lb" Content=" Customer Name" HorizontalAlignment="Left" Margin="21,28,0,0" VerticalAlignment="Top" FontSize="10" FontWeight="Bold" Width="90" Height="25"/>
+        <Label x:Name="Customer_lb" Content=" Customer ID" HorizontalAlignment="Left" Margin="21,28,0,0" VerticalAlignment="Top" FontSize="10" FontWeight="Bold" Width="90" Height="25"/>
         <TextBox x:Name="Name_tb" HorizontalAlignment="Left" Height="35" Margin="122,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="125" FontSize="8"/>
         <Border BorderBrush="#FF918A8A" BorderThickness="2" HorizontalAlignment="Left" Height="185" Margin="10,10,0,0" VerticalAlignment="Top" Width="353" CornerRadius="2" Visibility="Collapsed"/>
         <Button x:Name="Add_btn" HorizontalAlignment="Left" Margin="368,29,0,0" VerticalAlignment="Top" Width="70" Click="Add_Click" Height="30" Content="Add"/>

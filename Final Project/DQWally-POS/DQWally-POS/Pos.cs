@@ -55,12 +55,45 @@ namespace DQWally_POS
             this.Conntect();
             try
             {
-                string sql = "SELECT LastName FROM customer WHERE LastName =" + LName + ";";
+                string sql = "SELECT CustomerID FROM customer WHERE LastName ='" + LName + "';";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
                 if(!rdr.Read())
                 {
                     ret = "Customer Not Exist";
+                }
+                else
+                {
+                    ret = rdr[0].ToString();
+                }
+
+                rdr.Close();
+            }
+            catch (Exception ex)
+            {
+                ret = ex.Message;
+            }
+
+            conn.Close();
+            return ret;
+        }
+
+        public string FindCustomer(long pNumber)
+        {
+            this.Conntect();
+            string ret = string.Empty;
+            try
+            {
+                string sql = "SELECT CustomerID FROM customer WHERE PhoneNUmber =" + pNumber + ";";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                if (!rdr.Read())
+                {
+                    ret = "Customer Not Exist";
+                }
+                else
+                {
+                    ret = rdr[0].ToString();
                 }
                 rdr.Close();
             }
@@ -69,28 +102,6 @@ namespace DQWally_POS
                 ret = ex.Message;
             }
             conn.Close();
-            return ret;
-        }
-
-        public string FindCustomer(int pNumber)
-        {
-            string ret = string.Empty;
-            try
-            {
-                string sql = "SELECT PhoneNumber FROM customer WHERE PhoneNUmber =" + pNumber + ";";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
-                if (!rdr.Read())
-                {
-                    ret = "Customer Not Exist";
-                }
-                rdr.Close();
-            }
-            catch (Exception ex)
-            {
-                ret = ex.Message;
-            }
-
             return ret;
         }
 
