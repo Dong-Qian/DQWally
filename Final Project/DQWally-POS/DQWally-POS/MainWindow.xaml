@@ -5,15 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DQWally_POS"
         mc:Ignorable="d"
-        Title="DQWally POS" Height="350" Width="500" Background="Gainsboro">
-    <Window.Foreground>
-        <ImageBrush/>
-    </Window.Foreground>
-    <Grid>
-        <Button x:Name="Find_btn" HorizontalAlignment="Left" Margin="269,28,0,0" VerticalAlignment="Top" Width="70" Click="Find_Click" Height="30" Content="Find"/>
-        <Label x:Name="Customer_lb" Content=" Customer ID" HorizontalAlignment="Left" Margin="21,28,0,0" VerticalAlignment="Top" FontSize="10" FontWeight="Bold" Width="90" Height="25"/>
-        <TextBox x:Name="Name_tb" HorizontalAlignment="Left" Height="35" Margin="122,24,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="125" FontSize="8"/>
+        Title="DQWally POS" Height="700" Width="1000" Background="Gainsboro">
+
+    <Grid x:Name="Grid" Margin="0,0,2,1">
+        <Label x:Name="FName_lb" Content="First Name:" HorizontalAlignment="Left" Margin="42,99,0,0" VerticalAlignment="Top" Height="25" Width="70"/>
+        <TextBox x:Name="FName_tb" HorizontalAlignment="Left" Height="30" Margin="153,99,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="190" FontSize="14" FontWeight="Bold"/>
         <Border BorderBrush="#FF918A8A" BorderThickness="2" HorizontalAlignment="Left" Height="185" Margin="10,10,0,0" VerticalAlignment="Top" Width="353" CornerRadius="2" Visibility="Collapsed"/>
-        <Button x:Name="Add_btn" HorizontalAlignment="Left" Margin="368,29,0,0" VerticalAlignment="Top" Width="70" Click="Add_Click" Height="30" Content="Add"/>
+        <TextBlock x:Name="Money_bk" HorizontalAlignment="Left" Margin="621,63,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="61" Width="283" FontFamily="Yu Gothic UI" FontSize="48" FontWeight="Bold" Background="Black" Text="$0.00" TextAlignment="Right" RenderTransformOrigin="0.496,1.044" Foreground="#FF66EC09"/>
+        <Label x:Name="ProductID_lb" Content="Product" HorizontalAlignment="Left" Margin="548,144,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="Product_cb" HorizontalAlignment="Left" Margin="625,144,0,0" VerticalAlignment="Top" Width="280" Background="White" Foreground="#FF040404" Height="25" FontSize="14" FontWeight="Bold"/>
+        <Label x:Name="Qty_lb" Content="Qty" HorizontalAlignment="Left" Margin="560,194,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="Qty_tb" HorizontalAlignment="Left" Height="26" Margin="625,194,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="78" Text="1" FontSize="16" FontWeight="Bold"/>
+        <Button x:Name="Price_btn" Content="Price" HorizontalAlignment="Left" Margin="823,183,0,0" VerticalAlignment="Top" Width="90" Height="50" Click="Price_btn_Click" RenderTransformOrigin="0.441,1.08"/>
+        <Label x:Name="LName_lb" Content="Last Name" HorizontalAlignment="Left" Margin="42,162,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.581,0.425" Width="70" Height="25"/>
+        <TextBox x:Name="LName_tb" HorizontalAlignment="Left" Height="30" Margin="153,162,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="190" FontSize="14" FontWeight="Bold"/>
+        <Label x:Name="pNumber_lb" Content="Phone Number" HorizontalAlignment="Left" Margin="42,212,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.452,2.103" Height="25"/>
+        <Button x:Name="Find_btn" Content="Find Customer" HorizontalAlignment="Left" Margin="380,145,0,0" VerticalAlignment="Top" Width="100" Height="40" Click="Find_btn_Click"/>
+        <Button x:Name="Add_btn" Content="Add Customer" HorizontalAlignment="Left" Margin="380,49,0,0" VerticalAlignment="Top" Width="100" Click="Add_btn_Click" Height="40"/>
+        <TextBox x:Name="pArea_tb" HorizontalAlignment="Left" Height="30" Margin="153,212,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50" FontSize="14" FontWeight="Bold" MaxLength="3"/>
+        <TextBox x:Name="pNum2_tb" HorizontalAlignment="Left" Height="30" Margin="293,212,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50" FontSize="14" FontWeight="Bold" MaxLength="4"/>
+        <TextBox x:Name="pNum1_tb" HorizontalAlignment="Left" Height="30" Margin="220,212,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50" FontSize="14" FontWeight="Bold" MaxLength="3"/>
+        <GroupBox x:Name="groupBox" Header="Customer" HorizontalAlignment="Left" Margin="23,18,0,0" VerticalAlignment="Top" Height="336" Width="491" Foreground="Black" FontWeight="Bold" FontSize="18" Visibility="Hidden"/>
+        <Label x:Name="CusID_lb" Content="Customer ID" HorizontalAlignment="Left" Margin="42,44,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="CusID_tb" IsReadOnly="True" HorizontalAlignment="Left" Height="30" Margin="153,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="190" FontSize="14" FontWeight="Bold"/>
+        <Label x:Name="PhoneUsage_lb" Content="Phone Number Usage: 519-111-1111" HorizontalAlignment="Left" Margin="121,257,0,0" VerticalAlignment="Top" Width="242" FontSize="14" Foreground="#FFF50505" FontStyle="Italic"/>
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Margin="42,307,0,0" VerticalAlignment="Top" Height="214" Width="887" FontSize="14" IsReadOnly="True"/>
+        <Button x:Name="Cart_btn" Content="Add to Cart" HorizontalAlignment="Left" Margin="416,561,0,0" VerticalAlignment="Top" Width="90" Height="50" Click="Cart_btn_Click"/>
+        <Button x:Name="button_Copy" Content="Check Out" HorizontalAlignment="Left" Margin="789,561,0,0" VerticalAlignment="Top" Width="140" Height="70" Click="button_Copy_Click"/>
+        <ComboBox x:Name="Branch_cb" HorizontalAlignment="Left" Margin="70,576,0,0" VerticalAlignment="Top" Width="120" Height="25"/>
+        <ComboBox x:Name="Status_cb" HorizontalAlignment="Left" Margin="243,576,0,0" VerticalAlignment="Top" Width="120" Height="25"/>
+        <Label x:Name="Branch_lb" Content="Branch" HorizontalAlignment="Left" Margin="42,545,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="Status_lb" Content="Status" HorizontalAlignment="Left" Margin="220,545,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.209,0.09"/>
+        <Button x:Name="ShowCart_btn" Content="Show Cart" HorizontalAlignment="Left" Margin="648,561,0,0" VerticalAlignment="Top" Width="90" Height="50" Click="ShowCart_btn_Click"/>
+        <Button x:Name="button" Content="Delete Item" HorizontalAlignment="Left" Margin="532,561,0,0" VerticalAlignment="Top" Width="90" Height="50" Click="button_Click"/>
     </Grid>
 </Window>
