@@ -31,4 +31,3 @@ E:\Goole Driver\学习\semster 3\RD\DQWally\Final Project\DQWally-POS\DQWally-PO
 E:\Goole Driver\学习\semster 3\RD\DQWally\Final Project\DQWally-POS\DQWally-POS\obj\Debug\DQWally-POS.g.resources
 E:\Goole Driver\学习\semster 3\RD\DQWally\Final Project\DQWally-POS\DQWally-POS\obj\Debug\DQWally_POS.Properties.Resources.resources
 E:\Goole Driver\学习\semster 3\RD\DQWally\Final Project\DQWally-POS\DQWally-POS\obj\Debug\DQWally-POS.csproj.GenerateResource.Cache
-E:\Goole Driver\学习\semster 3\RD\DQWally\Final Project\DQWally-POS\DQWally-POS\obj\Debug\DQWally-POS.csprojResolveAssemblyReference.cache

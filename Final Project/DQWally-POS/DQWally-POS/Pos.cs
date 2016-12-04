@@ -5,16 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace DQWally_POS
 {
     class Pos
     {
         MySqlConnection conn;
+        MySqlDataAdapter da;
+        DataSet ds;
+
         public string Conntect()
         {
             string ret = string.Empty;
-            string connStr = "server=127.0.0.1;user=superuser;database=dqwally;port=3306;password=Conestoga1;";
+            string connStr = "server=127.0.0.1;user=super;database=dqwally;port=3306;password=Conestoga1;";
             conn = new MySqlConnection(connStr);
             try
             {
@@ -32,19 +36,22 @@ namespace DQWally_POS
         public string AddCustomer(string fName, string lName, string pNumber)
         {
             List<string> customer = new List<string>();
-            string ret = string.Empty;
-            this.Conntect();
+            string ret = string.Empty;        
             try
             {
                 customer = FindCustomerByPhone(pNumber);
-                ret = "Customer already Exist";
+                if(customer[0] == "Customer is not Exist")
+                {
+                    this.Conntect();
+                    string sql = "INSERT INTO customer (FirstName, LastName, PhoneNumber) VALUES ('" + fName + "','" + lName + "','" + pNumber + "');";
+                    MySqlCommand cmd = new MySqlCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                    ret = "Customer Added";
+                }
             }
             catch (Exception ex)
-            {
-                string sql = "INSERT INTO customer (FirstName, LastName, PhoneNumber) VALUES ('" + fName + "','" + lName + "','" + pNumber + "');";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-                ret = "Added Success";
+            {                
+                ret = ex.Message;
             }
 
             conn.Close();
@@ -54,9 +61,10 @@ namespace DQWally_POS
         public List<string> FindCustomerByPhone(string pNumber)
         {
             List<string> customer = new List<string>();
-            this.Conntect();
+           
             try
             {
+                this.Conntect();
                 string sql = "SELECT * FROM customer WHERE PhoneNumber ='" + pNumber + "';";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
@@ -70,7 +78,7 @@ namespace DQWally_POS
                 else
                 {
                     rdr.Close();
-                    throw new Exception("Customer is not Exist");
+                    customer.Add("Customer is not Exist");
                 }         
             }
             catch (Exception ex)
@@ -83,11 +91,11 @@ namespace DQWally_POS
         }
 
         public string FindProductPrice(int pID)
-        {
-            this.Conntect();
+        {           
             string ret = string.Empty;
             try
             {
+                this.Conntect();
                 string sql = "SELECT Price FROM product WHERE ProductID =" + pID + ";";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
@@ -112,10 +120,11 @@ namespace DQWally_POS
 
         public string FindProductQuantity(int pID)
         {
-            this.Conntect();
+          
             string ret = string.Empty;
             try
             {
+                this.Conntect();
                 string sql = "SELECT InventoryQuantity FROM product WHERE ProductID =" + pID + ";";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
@@ -135,5 +144,128 @@ namespace DQWally_POS
             }
             return ret;
         }
+
+        public string PlaceOrders(int CusID, int branchID, string status)
+        {
+           
+            string ret = string.Empty;
+            DateTime now = DateTime.Now;
+            now.ToString("yyyy-MM-dd");
+            try
+            {
+                this.Conntect();
+                string sql = "INSERT INTO orders (OrderDate, CustomerID, BranchID, OrderStatus) VALUES ('"+ DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "'," + CusID + "," + branchID + ",'" + status + "');";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+                ret = "Order Placed";
+            }
+            catch (Exception ex)
+            {
+                ret = ex.Message;
+            }
+            conn.Close();
+            return ret;
+        }
+
+        public string AddOrderLine(int OrdersID, int ProductID, int qty)
+        {
+
+            this.Conntect();
+            string ret = string.Empty;
+
+            conn.Close();
+            return ret;
+        }
+
+        public string ChangeOrderStatus(int OrdersID, string status)
+        {
+           
+            string ret = string.Empty;
+            try
+            {
+                this.Conntect();
+                string sql = "update orders set OrderStatus ='" + status + "' where OrdersID =" + OrdersID + ";";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+                ret = "Order Status Changed";
+            }
+            catch (Exception ex)
+            {
+                ret = ex.Message;
+            }
+            conn.Close();
+            return ret;
+        }
+  
+        public DataSet OrderHistory(int cusID)
+        {
+            try
+            {
+                this.Conntect();
+                da = new MySqlDataAdapter("select * from orders where CustomerID ='" + cusID + "';", conn);
+                ds = new DataSet();
+                da.Fill(ds);
+                conn.Close();
+                return ds;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }        
+        }
+
+        public DataSet Inventory()
+        {
+            try
+            {
+                this.Conntect();
+                da = new MySqlDataAdapter("select * from product;", conn);
+                ds = new DataSet();
+                da.Fill(ds);
+                conn.Close();
+                return ds;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }        
+        }
+
+
+        public DataSet CustomerRecord(int cusID)
+        {
+            try
+            {
+                this.Conntect();
+                da = new MySqlDataAdapter("select * from customer where CustomerID ='" + cusID + "';", conn);
+                ds = new DataSet();
+                da.Fill(ds);
+                conn.Close();
+                return ds;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataSet CustomerDB()
+        {
+            try
+            {
+                this.Conntect();
+                da = new MySqlDataAdapter("select * from customer;", conn);
+                ds = new DataSet();
+                da.Fill(ds);
+                conn.Close();
+                return ds;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
     }
 }
