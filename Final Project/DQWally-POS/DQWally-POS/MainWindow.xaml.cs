@@ -74,7 +74,7 @@ namespace DQWally_POS
                         {
                             //int inventory = Int32.Parse(pos.FindProductQuantity(Product_cb.SelectedIndex));
                             string price = pos.FindProductPrice(Product_cb.SelectedIndex + 1);
-                            decimal showPrice = decimal.Parse(price) * Qty;
+                            double showPrice = double.Parse(price) * Qty;
                             Money_bk.Text = "$ " + showPrice.ToString();
                         }
                         else
@@ -111,47 +111,77 @@ namespace DQWally_POS
 
             try
             {
-                if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
+                if (!string.IsNullOrEmpty(CusID_tb.Text))
                 {
-                    if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
+                    int cusID = 0;
+                    if (Int32.TryParse(CusID_tb.Text, out cusID))
                     {
-                        string pNumber = pArea + pNum1 + pNum2;
-                        if (long.TryParse(pNumber.ToString(), out phone))
+                        if (cusID > 0)
                         {
-                            pNumber = pArea + "-" + pNum1 + "-" + pNum2;
-                            customer = pos.FindCustomerByPhone(pNumber);
-                            if (customer[0] == "Customer is not Exist")
+                            customer = pos.FindCustomerByID(cusID);
+                            CusID_tb.Text = customer[0];
+                            FName_tb.Text = customer[1];
+                            LName_tb.Text = customer[2];
+                            string[] result = customer[3].Split('-');
+                            pArea_tb.Text = result[0];
+                            pNum1_tb.Text = result[1];
+                            pNum2_tb.Text = result[2];
+                            ds = pos.CustomerRecord(Int32.Parse(customer[0]));
+                            dataGrid.ItemsSource = ds.Tables[0].DefaultView;
+                            customer = null;
+                        }
+                        else
+                        {
+                            error = MessageBox.Show("Customer ID can not be less than 1");
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
+                    {
+                        if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
+                        {
+                            string pNumber = pArea + pNum1 + pNum2;
+                            if (long.TryParse(pNumber.ToString(), out phone))
                             {
-                                error = MessageBox.Show(customer[0]);
+                                pNumber = pArea + "-" + pNum1 + "-" + pNum2;
+                                customer = pos.FindCustomerByPhone(pNumber);
+                                if (customer[0] == "Customer is not Exist")
+                                {
+                                    error = MessageBox.Show(customer[0]);
+                                }
+                                else
+                                {
+                                    CusID_tb.Text = customer[0];
+                                    FName_tb.Text = customer[1];
+                                    LName_tb.Text = customer[2];
+                                    string[] result = customer[3].Split('-');
+                                    pArea_tb.Text = result[0];
+                                    pNum1_tb.Text = result[1];
+                                    pNum2_tb.Text = result[2];
+                                    ds = pos.CustomerRecord(Int32.Parse(customer[0]));
+                                    dataGrid.ItemsSource = ds.Tables[0].DefaultView;
+                                    customer = null;
+                                }
                             }
                             else
                             {
-                                CusID_tb.Text = customer[0];
-                                FName_tb.Text = customer[1];
-                                LName_tb.Text = customer[2];
-                                string[] result = customer[3].Split('-');
-                                pArea_tb.Text = result[0];
-                                pNum1_tb.Text = result[1];
-                                pNum2_tb.Text = result[2];
-                                ds = pos.CustomerRecord(Int32.Parse(customer[0]));
-                                dataGrid.ItemsSource = ds.Tables[0].DefaultView;
-                                customer = null;
+                                error = MessageBox.Show("Phone Number is not Numeric");
                             }
                         }
                         else
                         {
-                           error = MessageBox.Show("Phone Number is not Numeric");
+                            error = MessageBox.Show("Phone Number: Wrong Format");
                         }
-                    }
-                    else
-                    {
-                        error = MessageBox.Show("Phone Number: Wrong Format");
+
                     }
 
+                    else
+                    {
+                        error = MessageBox.Show("Customer ID need to be Number");
+                    }
                 }
                 else
                 {
-                    error = MessageBox.Show("Enter Phone Number");
+                    error = MessageBox.Show("Enter Phone Number or Customer ID");
                 }
             }
             catch(Exception ex)
@@ -307,63 +337,124 @@ namespace DQWally_POS
         {
             try
             {
+                foreach (shopCart item in orderLine)
+                {
+                    string inventory = pos.FindProductQuantity(item.productID);
+                    int pInevntory = Int32.Parse(inventory);
+                    if (pInevntory < item.qty)
+                    {
+                        error = MessageBox.Show(item.productName + "'s stock is too low. Stock: " + pInevntory);
+                        return;
+                    }
+                }
+
+                string status = Status_cb.Text;
+
                 string ret = string.Empty;
+                // shopping cart not empty
                 if (orderLine.Count != 0)
                 {
                     // Add orders to data base              
-
                     if (!string.IsNullOrEmpty(Status_cb.Text))
                     {
-                        string status = Status_cb.Text;
-                        foreach (shopCart item in orderLine)
+                        if (status != "RFND" && status != "CNCL")
                         {
-                            ret = pos.PlaceOrders(item.customerID, item.branchID, status);
+                            // Create Order
+                            ret = pos.PlaceOrders(orderLine[0].customerID, orderLine[0].branchID, status);
+                            // Get the Order ID
+                            string orderID = string.Empty;
+                            orderID = pos.GetOrderID(orderLine[0].customerID);
+
+                            // If Order success created
+                            if (ret == "Order Placed")
+                            {
+                                // Add all items in shopping cart into orderline     
+                                foreach (shopCart item in orderLine)
+                                {
+                                    pos.AddToOrderLine(Int32.Parse(orderID), item.productID, item.qty);
+
+                                    // If the status is Paid, adjust the inventory level
+                                    if (status == "PAID")
+                                    {
+                                        pos.AdjustInventory(Int32.Parse(orderID), item.qty, item.productID);
+                                    }
+                                }
+                                orderLine.Clear();
+                            }
+                        }
+                        else
+                        {
+                            error = MessageBox.Show("You can not create order with RFND or CNCL status");
                         }
                     }
                     else
                     {
                         error = MessageBox.Show("Choose Status for order");
                     }
-                }
-                else if (!string.IsNullOrEmpty(CusID_tb.Text) && !string.IsNullOrEmpty(Branch_cb.Text) && !string.IsNullOrEmpty(Status_cb.Text)
-                    && !string.IsNullOrEmpty(Product_cb.Text) && !string.IsNullOrEmpty(Qty_tb.Text))
-                {
-                    int Qty;
-                    if (Int32.TryParse(Qty_tb.Text, out Qty))
-                    {
-                        if (Qty > 0)
-                        {
-                            int cusID = Int32.Parse(CusID_tb.Text);
-                            int branchID = Branch_cb.SelectedIndex + 1;
-                            string status = Status_cb.Text;
-                            ret = pos.PlaceOrders(cusID, branchID, status);
-                        }
-                        else
-                        {
-                            error = MessageBox.Show("Quantity can not be less than 1");
-                        }
-                    }
-                    else
-                    {
-                        error = MessageBox.Show("Quantity needs be Numberic");
-                    }
+
                 }
                 else
                 {
-                    error = MessageBox.Show("Choose Customer, Product, Quantity, Branch and Satus");
+                    error = MessageBox.Show("Cart is Empty");
                 }
+                //// Create order when shopping cart is empty
+                //else if (!string.IsNullOrEmpty(CusID_tb.Text) && !string.IsNullOrEmpty(Branch_cb.Text) && !string.IsNullOrEmpty(Status_cb.Text)
+                //    && !string.IsNullOrEmpty(Product_cb.Text) && !string.IsNullOrEmpty(Qty_tb.Text))
+                //{
+                //    if (status != "RFND" && status != "CNCL")
+                //    {
+                //        int Qty;
+                //        if (Int32.TryParse(Qty_tb.Text, out Qty))
+                //        {
+                //            if (Qty > 0)
+                //            {
+                //                int cusID = Int32.Parse(CusID_tb.Text);
+                //                int branchID = Branch_cb.SelectedIndex + 1;
+                //                ret = pos.PlaceOrders(cusID, branchID, status);
+                //                string orderID = string.Empty;
+                //                orderID = pos.GetOrderID(cusID);
+                //                if (status == "PAID")
+                //                {
+                //                    pos.AdjustInventory(Int32.Parse(orderID), Qty, Product_cb.SelectedIndex + 1);
+                //                    error = MessageBox.Show(ret);
+                //                }
+                //                if (ret == "Order Placed")
+                //                {
+                //                    pos.AddToOrderLine(Int32.Parse(orderID), Product_cb.SelectedIndex + 1, Qty);
+                //                }
+                //            }
+                //            else
+                //            {
+                //                error = MessageBox.Show("Quantity can not be less than 1");
+                //            }
+                //        }
+                //        else
+                //        {
+                //            error = MessageBox.Show("Quantity needs be Numberic");
+                //        }
+                //    }
+
+                //    else
+                //    {
+                //        error = MessageBox.Show("You can not create order with RFND or CNCL status");
+                //    }
+                //}
+                //else
+                //{
+                //    error = MessageBox.Show("Choose Customer, Product, Quantity, Branch and Satus");
+                //}
 
                 if (ret == "Order Placed")
                 {
                     error = MessageBox.Show("*********************\nThank you for shopping at\nWally’s World Sports World\nOn Sept. 20, 2016, Sean Clarke!\nOrder ID: 5001\nVictorian Lace Wallpaper(roll) 4 x $14.95 = $59.80\nDrywall Repair Compound(tube) 1 x $6.95 = $6.95\nDrywall Tape(roll) 2 x $3.95 = $7.90\nSubtotal = $ 74.65\nHST(13 %) = $ 9.70\nSale Total = $ 84.35\n)");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 error = MessageBox.Show("Error:\n\t" + ex.Message);
             }
 
-            orderLine.Clear();
+           
         }
 
         private void Inventory_btn_Click(object sender, RoutedEventArgs e)
@@ -448,6 +539,57 @@ namespace DQWally_POS
             catch (Exception ex)
             {
                 error = MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void Orderline_btn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(OrderID_tb.Text))
+            {
+                string orderIDStr = OrderID_tb.Text;
+                int orderID = 0;
+                if (Int32.TryParse(orderIDStr, out orderID) && orderID > 0)
+                {
+                    try
+                    {
+                        ds = pos.OrderDetail(orderID);
+                        dataGrid.ItemsSource = ds.Tables[0].DefaultView;
+                    }
+                    catch (Exception ex)
+                    {
+                        error = MessageBox.Show(ex.Message);
+                    }
+                }
+                else
+                {
+                    error = MessageBox.Show("Order ID must be Numberic and lager than 0");
+                }
+            }
+            else
+            {
+                error = MessageBox.Show("Choose Order ID");
+            }
+        }
+
+        private void SalesRecord_btn_Click(object sender, RoutedEventArgs e)
+        {
+            string ret = string.Empty;
+            int orderID = 0;
+            if (!string.IsNullOrEmpty(OrderID_tb.Text))
+            {
+                if (Int32.TryParse(OrderID_tb.Text, out orderID) && orderID > 0)
+                {
+                    ret =pos.SalesRecord(orderID);
+                    error = MessageBox.Show(ret);
+                }
+                else
+                {
+                    error = MessageBox.Show("Order ID must be Numberic and lager than 0");
+                }
+            }
+            else
+            {
+                error = MessageBox.Show("Choose Order ID and Status");
             }
         }
     }
