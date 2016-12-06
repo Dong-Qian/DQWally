@@ -19,8 +19,9 @@ namespace DQWally_POS
            public string productID;
            public string qty;
         }
+        
         List<orderLineTemp> temp = new List<orderLineTemp>();
-
+        List<string> product = new List<string>();
 
         public string Conntect()
         {
@@ -580,6 +581,29 @@ namespace DQWally_POS
             temp.Clear();
             conn.Close();
             return ret;
+        }
+        
+         public List<string>  GetProduct()
+        {
+            string ret = string.Empty;
+            try
+            {
+                this.Conntect();
+                string sql = "select ProductName from product;";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                while(rdr.Read())
+                {
+                    product.Add(rdr[0].ToString());
+                }               
+                rdr.Close();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            conn.Close();
+            return product;
         }
     }
 }
