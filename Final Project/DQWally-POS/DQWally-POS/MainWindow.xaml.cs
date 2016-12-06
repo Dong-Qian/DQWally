@@ -1,4 +1,11 @@
-﻿using System;
+/*
+* ProjectName:  MainWindow.xaml.cs.cs
+* Programer:    Dong Qian (6573448)
+* Date:         Dec 4 16, 2016
+* Description:  This is a simple POS Application which connect to MySql Database
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,12 +31,14 @@ namespace DQWally_POS
     /// </summary>
     public partial class MainWindow : Window
     {
-        DataSet ds;
+        DataSet ds; // dataSet variable use to display select table from database
         Pos pos = new Pos();
-        List<shopCart> orderLine = new List<shopCart>();
-        List<string> product = new List<string>();
-        MessageBoxResult error;
-
+        List<shopCart> orderLine = new List<shopCart>();    // a list contains the orderline table
+        List<string> product = new List<string>();  // a list contains the product table
+        List<string> bracnch = new List<string>();
+        MessageBoxResult error; // messagebox to show all information
+        
+        // struct to store the item information when customer place order
         struct shopCart
         {
             public int customerID;
@@ -40,39 +49,50 @@ namespace DQWally_POS
             public int qty;
         }
 
-
         public MainWindow()
         {
             InitializeComponent();
+            // load product table in to a combox
             product = pos.GetProduct();
             foreach (string item in product)
             {
                 Product_cb.Items.Add(item);
             }
-
-            Branch_cb.Items.Add("Sporst World");
-            Branch_cb.Items.Add("Cambridge Mall");
-            Branch_cb.Items.Add("St.jacobs");
-
+            
+            // load branch in to a combox
+            branch = pos.GetBranch();
+            foreach (string item in branch)
+            {
+                Branch_cb.Items.Add(item);
+            }
+            
+            // load the status into combox
             Status_cb.Items.Add("PAID");
             Status_cb.Items.Add("PEND");
             Status_cb.Items.Add("RFND");
             Status_cb.Items.Add("CNCL");
 
         }
-
+        
+        /// <summary>
+        /// Call FindProductPrice method to check the specific item's unit price
+        /// </summary>
         private void Price_btn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // product textbox can not be empty
                 if (!string.IsNullOrEmpty(Product_cb.Text))
                 {
                     int Qty;
+                    // Qty must be a number and lager than 0
                     if (Int32.TryParse(Qty_tb.Text, out Qty))
                     {
+                        // if Qty is larger than 0, find the unit price and mutiple to Qty
+                        // display the total price
+                        // otherwise display the errors
                         if (Qty > 0)
                         {
-                            //int inventory = Int32.Parse(pos.FindProductQuantity(Product_cb.SelectedIndex));
                             string price = pos.FindProductPrice(Product_cb.SelectedIndex + 1);
                             double showPrice = double.Parse(price) * Qty;
                             Money_bk.Text = "$ " + showPrice.ToString();
@@ -99,6 +119,9 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Call FindCustomerByID or FindCustomerByphone method to find the customer information
+        /// </summary>
         private void Find_btn_Click(object sender, RoutedEventArgs e)
         {
             string lName = LName_tb.Text;
@@ -108,9 +131,12 @@ namespace DQWally_POS
             List<string> customer = new List<string>();
             long phone = 0;
             string ret = string.Empty;
-
+            
+            // 1. find the customer by ID
+            // 2. find the customer by phone number
             try
             {
+                // customer ID can not be empty and must be a non negative number 
                 if (!string.IsNullOrEmpty(CusID_tb.Text))
                 {
                     int cusID = 0;
@@ -118,6 +144,9 @@ namespace DQWally_POS
                     {
                         if (cusID > 0)
                         {
+                            // Get the information from database and display to the specific textbox
+                            // it returns a list
+                            // display all errors
                             customer = pos.FindCustomerByID(cusID);
                             CusID_tb.Text = customer[0];
                             FName_tb.Text = customer[1];
@@ -140,6 +169,10 @@ namespace DQWally_POS
                         error = MessageBox.Show("Customer ID need to be Number");
                     }
                  }
+                 // Get the customer information by phone number, which is unqiue phone number
+                 // phone number can not be empty
+                 // phone number must be a number
+                 // display all errror
                  else if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
                     {
                         if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
@@ -148,6 +181,8 @@ namespace DQWally_POS
                             if (long.TryParse(pNumber.ToString(), out phone))
                             {
                                 pNumber = pArea + "-" + pNum1 + "-" + pNum2;
+                                // find the customer information 
+                                // return as a list
                                 customer = pos.FindCustomerByPhone(pNumber);
                                 if (customer[0] == "Customer is not Exist")
                                 {
@@ -155,6 +190,7 @@ namespace DQWally_POS
                                 }
                                 else
                                 {
+                                    // fill into textbox area
                                     CusID_tb.Text = customer[0];
                                     FName_tb.Text = customer[1];
                                     LName_tb.Text = customer[2];
@@ -188,30 +224,38 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Call AddCustomer method to add a new customer to the database
+        /// </summary>
         private void Add_btn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // add a new cutomer needs customer's first name, last name and phone number. 
+                // display all errors
                 List<string> customer = new List<string>();
                 string ret = string.Empty;
                 string pArea = pArea_tb.Text;
                 string pNum1 = pNum1_tb.Text;
                 string pNum2 = pNum2_tb.Text;
                 long phone = 0;
+                 // all these attributes can not be empty
                 if (!string.IsNullOrEmpty(FName_tb.Text) && !string.IsNullOrEmpty(LName_tb.Text) &&
                     !string.IsNullOrEmpty(pArea_tb.Text) && !string.IsNullOrEmpty(pNum1_tb.Text) &&
                      !string.IsNullOrEmpty(pNum2_tb.Text))
 
                 {
+                    // phone number must be a number
                     if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
                     {
                         string pNumber = pArea + pNum1 + pNum2;
                         if (long.TryParse(pNumber.ToString(), out phone))
                         {
                             pNumber = pArea + "-" + pNum1 + "-" + pNum2;
-                           
+                            // call addCustomer to add customer
                             ret = pos.AddCustomer(FName_tb.Text, LName_tb.Text, pNumber);
                             error = MessageBox.Show(ret);
+                            // find out the new added customer and display to the textbox
                             customer = pos.FindCustomerByPhone(pNumber);
                             CusID_tb.Text = customer[0];
                             FName_tb.Text = customer[1];
@@ -220,6 +264,7 @@ namespace DQWally_POS
                             pArea_tb.Text = result[0];
                             pNum1_tb.Text = result[1];
                             pNum2_tb.Text = result[2];
+                            // also show to the dataGrid
                             ds = pos.CustomerRecord(Int32.Parse(customer[0]));                          
                             dataGrid.ItemsSource = ds.Tables[0].DefaultView;
                             customer = null;
@@ -244,19 +289,36 @@ namespace DQWally_POS
                 error = MessageBox.Show("Error:\n\t" + ex.Message);
             }
          }
-
+                
+        /// <summary>
+        /// Add items into shopping cart, needs product, Qty and branch
+        /// </summary>
         private void Cart_btn_Click(object sender, RoutedEventArgs e)
         {
             shopCart shopCart = new shopCart();
+            // all these fields can not be empty
             if (!string.IsNullOrEmpty(Product_cb.Text) && !string.IsNullOrEmpty(CusID_tb.Text) &&
                !string.IsNullOrEmpty(Qty_tb.Text) && !string.IsNullOrEmpty(Branch_cb.Text))
             {
-                shopCart.productID = Product_cb.SelectedIndex + 1;
+                shopCart.productID = Product_cb.SelectedIndex + 1;                              
+                // qty needs to be a number and lager than 0
                 int Qty;
                 if (Int32.TryParse(Qty_tb.Text, out Qty))
                 {
                     if (Qty > 0)
                     {
+                                // go through the shopping cart and find the the inventory quantity
+                                // if the inventory is less than order quantity, display errors
+                      foreach (shopCart item in orderLine)
+                        {
+                    string inventory = pos.FindProductQuantity(item.productID);
+                    int pInevntory = Int32.Parse(inventory);
+                    if (pInevntory < item.qty)
+                    {
+                        error = MessageBox.Show(item.productName + "'s stock is too low. Stock: " + pInevntory);
+                        return;
+                    }
+                 }
                         if (orderLine.Count != 0)
                         {
                             for (int i = 0; i < orderLine.Count; i++)
@@ -268,12 +330,13 @@ namespace DQWally_POS
                                 }
                             }
                         }
-                        // Add new one
+                        // Add all infotamtion about the item into the a shopping cart struct
                         shopCart.customerID = Int32.Parse(CusID_tb.Text);
                         shopCart.branchID = Branch_cb.SelectedIndex + 1;
                         shopCart.branchName = Branch_cb.Text;
                         shopCart.productName = Product_cb.Text;
                         shopCart.qty = Qty;
+                        // add this shoping cart into orderline list
                         orderLine.Add(shopCart);
                         error = MessageBox.Show("Item Added");
                     }
@@ -294,9 +357,13 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Show the shopping cart to the custome, basic is like orderline
+        /// </summary>
         private void ShowCart_btn_Click(object sender, RoutedEventArgs e)
         {
             string display = "Shopping Cart Detail\n\n";
+            // go through the list of shopping cart and display all the items
             foreach (shopCart item in orderLine)
             {
                 display += "Product Name: " + item.productName + "  Quantity: " + item.qty + " From " + item.branchName + "\n\n";
@@ -305,6 +372,9 @@ namespace DQWally_POS
             error = MessageBox.Show(display);
         }
 
+        /// <summary>
+        /// Delete the item from the shopping cart
+        /// </summary>
         private void Delete_btn_Click(object sender, RoutedEventArgs e)
         {
             bool flag = false;
@@ -331,30 +401,23 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Check out the order, it should contains mutiple items (orderline)
+        /// </summary>
         private void CheckOut_btn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                foreach (shopCart item in orderLine)
-                {
-                    string inventory = pos.FindProductQuantity(item.productID);
-                    int pInevntory = Int32.Parse(inventory);
-                    if (pInevntory < item.qty)
-                    {
-                        error = MessageBox.Show(item.productName + "'s stock is too low. Stock: " + pInevntory);
-                        return;
-                    }
-                }
-
                 string status = Status_cb.Text;
-
                 string ret = string.Empty;
                 // shopping cart not empty
                 if (orderLine.Count != 0)
                 {
-                    // Add orders to data base              
+                    // Add orders to data base, status can not be empty            
                     if (!string.IsNullOrEmpty(Status_cb.Text))
                     {
+                        // Customer can not make a new order with RFND and CNCL status.
+                        // Only allow PAID and PEND
                         if (status != "RFND" && status != "CNCL")
                         {
                             // Create Order
@@ -389,12 +452,12 @@ namespace DQWally_POS
                     {
                         error = MessageBox.Show("Choose Status for order");
                     }
-
                 }
                 else
                 {
                     error = MessageBox.Show("Cart is Empty");
                 }
+                
                 //// Create order when shopping cart is empty
                 //else if (!string.IsNullOrEmpty(CusID_tb.Text) && !string.IsNullOrEmpty(Branch_cb.Text) && !string.IsNullOrEmpty(Status_cb.Text)
                 //    && !string.IsNullOrEmpty(Product_cb.Text) && !string.IsNullOrEmpty(Qty_tb.Text))
@@ -450,9 +513,7 @@ namespace DQWally_POS
             catch (Exception ex)
             {
                 error = MessageBox.Show("Error:\n\t" + ex.Message);
-            }
-
-           
+            }           
         }
 
         private void Inventory_btn_Click(object sender, RoutedEventArgs e)
@@ -475,10 +536,15 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Display the customer's order history
+        /// </summary>
         private void OrderHistory_btn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // in order to diaply orders, customer ID can not be empty
+                // display errors
                 if (!string.IsNullOrEmpty(CusID_tb.Text))
                 {
                     int cusID = Int32.Parse(CusID_tb.Text);
@@ -496,20 +562,23 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Change the status of the order form PAID to RFND, PEND to PAID, or PEND to CNCL
+        /// </summary>
         private void ChangeStatus_btn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 string ret = string.Empty;
                 int orderID = 0;
+                // orderID and status can not be empty
                 if (!string.IsNullOrEmpty(OrderID_tb.Text) && !string.IsNullOrEmpty(Status_cb.Text))
                 {
+                // orderID needs be number and larger than 0
                     if (Int32.TryParse(OrderID_tb.Text, out orderID) && orderID > 0)
                     {
-
                         ret = pos.ChangeOrderStatus(orderID, Status_cb.Text);
                         error = MessageBox.Show(ret);
-
                     }
                     else
                     {
@@ -526,7 +595,10 @@ namespace DQWally_POS
                 error = MessageBox.Show(ex.Message);
             }
         }
-
+    
+        /// <summary>
+        /// Display the customer table to the dataGrid
+        /// </summary>
         private void CustomerDB_tb_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -540,6 +612,9 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Display the orderline to the specific orders
+        /// </summary>
         private void Orderline_btn_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(OrderID_tb.Text))
@@ -550,6 +625,7 @@ namespace DQWally_POS
                 {
                     try
                     {
+                        // call orderDetail method and return a dataSet use to show on dataGrid
                         ds = pos.OrderDetail(orderID);
                         dataGrid.ItemsSource = ds.Tables[0].DefaultView;
                     }
@@ -569,6 +645,9 @@ namespace DQWally_POS
             }
         }
 
+        /// <summary>
+        /// Display the Sales Record
+        /// </summary>
         private void SalesRecord_btn_Click(object sender, RoutedEventArgs e)
         {
             string ret = string.Empty;
@@ -577,6 +656,7 @@ namespace DQWally_POS
             {
                 if (Int32.TryParse(OrderID_tb.Text, out orderID) && orderID > 0)
                 {
+                    // call salesReord method and return a sting contains all inforamtion about sales record
                     ret =pos.SalesRecord(orderID);
                     error = MessageBox.Show(ret);
                 }
