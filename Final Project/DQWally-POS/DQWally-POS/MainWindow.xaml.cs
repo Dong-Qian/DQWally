@@ -135,7 +135,12 @@ namespace DQWally_POS
                             error = MessageBox.Show("Customer ID can not be less than 1");
                         }
                     }
-                    else if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
+                     else
+                    {
+                        error = MessageBox.Show("Customer ID need to be Number");
+                    }
+                 }
+                 else if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
                     {
                         if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
                         {
@@ -170,14 +175,7 @@ namespace DQWally_POS
                         else
                         {
                             error = MessageBox.Show("Phone Number: Wrong Format");
-                        }
-
-                    }
-
-                    else
-                    {
-                        error = MessageBox.Show("Customer ID need to be Number");
-                    }
+                        }                  
                 }
                 else
                 {
