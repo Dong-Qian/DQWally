@@ -1,4 +1,11 @@
-﻿using System;
+/*
+* ProjectName:  Pos.cs
+* Programer:    Dong Qian (6573448)
+* Date:         Dec 4 16, 2016
+* Description:  This is a simple POS Application which connect to MySql Database
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +29,11 @@ namespace DQWally_POS
         
         List<orderLineTemp> temp = new List<orderLineTemp>();
         List<string> product = new List<string>();
+        List<string> branch = new List<string>();
 
+        /// <summary>
+		/// Connect to the database dqWally
+		/// </summary>
         public string Conntect()
         {
             string ret = string.Empty;
@@ -31,23 +42,30 @@ namespace DQWally_POS
             try
             {
                 conn.Open();
-                ret = "Connection Success";
             }
             catch (Exception ex)
             {
-                ret = ex.Message;
+                throw ex;
             }
-
             return ret;
         }
 
+        /// <summary>
+		/// Add new cuntomer to the database
+		/// </summary>
+		/// <param name="fName">Customer's first name.</param>
+        /// <param name="LName">Customer's last name</param>
+        /// <param name="pNumber">Customer's phone number</param>
+		/// <returns>string - contains a message or exception to indicate success or failed</returns>
         public string AddCustomer(string fName, string lName, string pNumber)
         {
             List<string> customer = new List<string>();
-            string ret = string.Empty;        
+            string ret = string.Empty; 
+            // find customer in the database first, see if the customer is already exist
             try
             {
                 customer = FindCustomerByPhone(pNumber);
+                // if not exist, add customer into database
                 if(customer[0] == "Customer is not Exist")
                 {
                     this.Conntect();
@@ -66,16 +84,21 @@ namespace DQWally_POS
             return ret;
         }
 
+        /// <summary>
+		/// Add new cuntomer to the database
+		/// </summary>
+		/// <param name="pNumber">a phone number</param>
+		/// <returns>list of string - contains a string of cutomers information or exception to indicate success or failed</returns>
         public List<string> FindCustomerByPhone(string pNumber)
         {
-            List<string> customer = new List<string>();
-           
+            List<string> customer = new List<string>();           
             try
             {
                 this.Conntect();
                 string sql = "SELECT * FROM customer WHERE PhoneNumber ='" + pNumber + "';";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
+                // Add custome's ID, first name, last name, phhone number into a list
                 if (rdr.Read())
                 {
                     customer.Add(rdr[0].ToString());
@@ -85,7 +108,6 @@ namespace DQWally_POS
                 }
                 else
                 {
-                    rdr.Close();
                     customer.Add("Customer is not Exist");
                 }         
             }
@@ -93,11 +115,17 @@ namespace DQWally_POS
             {           
                 throw ex;
             }
-          
+            
+            rdr.Close();
             conn.Close();
             return customer;
         }
 
+        /// <summary>
+		/// Find the customer from the database
+		/// </summary>
+		/// <param name="pNumber">a phone number</param>
+		/// <returns>list of string - contains a string of cutomers information or exception to indicate success or failed</returns>
         public List<string> FindCustomerByID(int cusID)
         {
             List<string> customer = new List<string>();
@@ -590,6 +618,29 @@ namespace DQWally_POS
             {
                 this.Conntect();
                 string sql = "select ProductName from product;";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                while(rdr.Read())
+                {
+                    product.Add(rdr[0].ToString());
+                }               
+                rdr.Close();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            conn.Close();
+            return product;
+        }
+        
+        public List<string>  GetBranch()
+        {
+            string ret = string.Empty;
+            try
+            {
+                this.Conntect();
+                string sql = "select BranchName from branch;";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
                 while(rdr.Read())
