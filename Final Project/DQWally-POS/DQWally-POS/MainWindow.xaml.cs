@@ -27,6 +27,7 @@ namespace DQWally_POS
         DataSet ds;
         Pos pos = new Pos();
         List<shopCart> orderLine = new List<shopCart>();
+        List<string> product = new List<string>();
         MessageBoxResult error;
 
         struct shopCart
@@ -43,12 +44,11 @@ namespace DQWally_POS
         public MainWindow()
         {
             InitializeComponent();
-            Product_cb.Items.Add("Disco Queen Wallpaper (roll)");
-            Product_cb.Items.Add("Countryside Wallpaper (roll)");
-            Product_cb.Items.Add("Victorian Lace Wallpaper (roll)");
-            Product_cb.Items.Add("Drywall Tape (roll)");
-            Product_cb.Items.Add("Drywall Tape (pkg 10)");
-            Product_cb.Items.Add("Drywall Repair Compound (tube)");
+            product = pos.GetProduct();
+            foreach (string item in product)
+            {
+                Product_cb.Items.Add(item);
+            }
 
             Branch_cb.Items.Add("Sporst World");
             Branch_cb.Items.Add("Cambridge Mall");
