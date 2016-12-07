@@ -1,0 +1,22 @@
+﻿<!--
+* ProjectName:  ShoppingCart.xaml
+* Programer:    Dong Qian (6573448)
+* Date:         Dec 4, 2016
+* Description:  This is a simple POS Application shopping cart GUI
+-->
+
+<Window x:Name="DQwallyShop" x:Class="DQWally_POS.shoppingCart"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DQWally_POS"
+        mc:Ignorable="d"
+        Title="DQWally Shopping Cart" Height="400" Width="600" Grid.IsSharedSizeScope="True" ResizeMode="NoResize">
+    <Grid>
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" Margin="30,88,0,0" VerticalAlignment="Top" Height="213" Width="536" Grid.IsSharedSizeScope="True" FontSize="18" FontWeight="Bold" CanUserAddRows="False"/>
+        <Label x:Name="cusName_lb" Content="Shopping Cart" HorizontalAlignment="Left" Margin="232,17,0,0" VerticalAlignment="Top" Height="59" Width="158" FontWeight="Bold" FontSize="20"/>
+        <Button x:Name="button" Content="OK" HorizontalAlignment="Left" Margin="258,314,0,0" VerticalAlignment="Top" Width="80" Height="37" Click="button_Click"/>
+
+    </Grid>
+</Window>

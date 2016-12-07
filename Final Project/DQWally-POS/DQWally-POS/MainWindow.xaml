@@ -1,4 +1,11 @@
-﻿<Window x:Name="POS" x:Class="DQWally_POS.MainWindow"
+﻿ <!--
+* ProjectName:  MainWindow.xaml
+* Programer:    Dong Qian (6573448)
+* Date:         Dec 4, 2016
+* Description:  This is a simple POS Application GUI
+-->
+    
+    <Window x:Name="POS" x:Class="DQWally_POS.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
