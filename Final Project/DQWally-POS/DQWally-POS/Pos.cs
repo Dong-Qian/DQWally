@@ -5,6 +5,7 @@
 * Description:  This is a simple POS Application which connect to MySql Database
 */
 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,16 +19,19 @@ namespace DQWally_POS
 {
     class Pos
     {
+        // create variables
         MySqlConnection conn;
         MySqlDataAdapter da;
         DataSet ds;
 
+        // struct to store for some orderline inforamtion
         struct orderLineTemp
         {
            public string productID;
            public string qty;
         }
         
+        // list use for display to data table
         List<orderLineTemp> temp = new List<orderLineTemp>();
         List<string> product = new List<string>();
         List<string> branch = new List<string>();
@@ -39,7 +43,7 @@ namespace DQWally_POS
         public string Conntect()
         {
             string ret = string.Empty;
-            string connStr = "server=127.0.0.1;user=super;database=dqwally;port=3306;password=Conestoga1;";
+            string connStr = "server=127.0.0.1;user=root;database=dqwally;port=3306;password=Conestoga1;";
             conn = new MySqlConnection(connStr);
             try
             {
@@ -233,6 +237,7 @@ namespace DQWally_POS
             {
                 ret = ex.Message;
             }
+
             return ret;
         }
 
@@ -263,6 +268,7 @@ namespace DQWally_POS
             {
                 ret = ex.Message;
             }
+
             conn.Close();
             return ret;
         }
@@ -571,7 +577,7 @@ namespace DQWally_POS
             try
             {
                 this.Conntect();
-                da = new MySqlDataAdapter("select ord.OrdersID, ord.ProductID, pr.ProductName, pr.UnitPrice, ord.Quantity from orderline ord inner join product pr on ord.ProductID = pr.ProductID where OrdersID =" + orderID + ";", conn);
+                da = new MySqlDataAdapter("select ol.OrdersID, p.ProductName, p.UnitPrice, ol.Quantity, (p.UnitPrice * ol.Quantity) as TotalPrice from orderline ol inner join product p on ol.ProductID = p.ProductID where OrdersID =" + orderID + ";", conn);
                 ds = new DataSet();
                 da.Fill(ds);
                 conn.Close();
@@ -592,6 +598,7 @@ namespace DQWally_POS
         public string SalesRecord(int ordersID)
         {
             #region Get all Needed Infromation for Sales Record
+            // all variables use to store the sales record's inforamtion
             string ret = string.Empty;
             string customerID = string.Empty;
             string branchID = string.Empty;

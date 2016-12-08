@@ -36,6 +36,7 @@ namespace DQWally_POS
         List<shopCart> orderLine = new List<shopCart>();    // a list contains the orderline table
         List<string> product = new List<string>();  // a list contains the product table
         List<string> branch = new List<string>();   // a list contains the branch table
+        DataTable dt; // A datatable use to show shopping cart
         MessageBoxResult error; // messagebox to show all information
         
         // struct to store the item information when customer place order
@@ -73,6 +74,8 @@ namespace DQWally_POS
             Status_cb.Items.Add("RFND");
             Status_cb.Items.Add("CNCL");
 
+            // resize the window to hide shopping cart
+            Application.Current.MainWindow.Width = 990;
         }
         
 
@@ -152,6 +155,11 @@ namespace DQWally_POS
                             // it returns a list
                             // display all errors
                             customer = pos.FindCustomerByID(cusID);
+                            if (customer[0] == "Customer is not Exist")
+                            {
+                                error = MessageBox.Show(customer[0]);
+                                return;
+                            }
                             CusID_tb.Text = customer[0];
                             FName_tb.Text = customer[1];
                             LName_tb.Text = customer[2];
@@ -179,6 +187,7 @@ namespace DQWally_POS
                 // phone number can not be empty
                 // phone number must be a number
                 // display all errror
+
                 #region Find customer by phone number
                 else if (!string.IsNullOrEmpty(pArea) && !string.IsNullOrEmpty(pNum1) && !string.IsNullOrEmpty(pNum2))
                     {
@@ -221,6 +230,7 @@ namespace DQWally_POS
                         }                  
                 }
                 #endregion
+
                 else
                 {
                     error = MessageBox.Show("Enter Phone Number or Customer ID");
@@ -252,7 +262,6 @@ namespace DQWally_POS
                 if (!string.IsNullOrEmpty(FName_tb.Text) && !string.IsNullOrEmpty(LName_tb.Text) &&
                     !string.IsNullOrEmpty(pArea_tb.Text) && !string.IsNullOrEmpty(pNum1_tb.Text) &&
                      !string.IsNullOrEmpty(pNum2_tb.Text))
-
                 {
                     // phone number must be a number
                     if (pArea.Length == 3 && pNum1.Length == 3 && pNum2.Length == 4)
@@ -307,18 +316,17 @@ namespace DQWally_POS
         {
             shopCart shopCart = new shopCart();
             int pID = 0;
-            int qty = 0;
             // all these fields can not be empty
             if (!string.IsNullOrEmpty(Product_cb.Text) && !string.IsNullOrEmpty(CusID_tb.Text) &&
                !string.IsNullOrEmpty(Qty_tb.Text) && !string.IsNullOrEmpty(Branch_cb.Text))
-            {                                       
+            {
                 // qty needs to be a number and lager than 0
                 int Qty;
                 if (Int32.TryParse(Qty_tb.Text, out Qty))
                 {
                     if (Qty > 0)
                     {
-                        pID = Product_cb.SelectedIndex + 1;                 
+                        pID = Product_cb.SelectedIndex + 1;
                         // go through the shopping cart and find the the inventory quantity
                         // if the inventory is less than order quantity, display errors
                         string inventory = pos.FindProductQuantity(pID);
@@ -349,7 +357,12 @@ namespace DQWally_POS
                         shopCart.qty = Qty;
                         // add this shoping cart into orderline list
                         orderLine.Add(shopCart);
-                        error = MessageBox.Show("Item Added");
+                        // Update the shopping cart
+                        #region Shopping Cart View
+                        UpdateCart(orderLine);
+                        #endregion
+                        // show shopping cart
+                        Application.Current.MainWindow.Width = 1600;
                     }
                     else
                     {
@@ -359,36 +372,12 @@ namespace DQWally_POS
                 else
                 {
                     error = MessageBox.Show("Quantity for the item is not number");
-                }             
+                }
+
             }
-          
             else
             {
                 error = MessageBox.Show("Choose Customer, Product, Quantity and Branch");
-            }
-        }
-
-
-        /// <summary>
-        /// Show the shopping cart to the custome, basic is like orderline
-        /// </summary>
-        private void ShowCart_btn_Click(object sender, RoutedEventArgs e)
-        {
-            List<string> shopcart = new List<string>();
-            if (orderLine.Count != 0)
-            {
-                foreach (shopCart item in orderLine)
-                {
-                    shopcart.Add(item.productName);
-                    shopcart.Add(item.qty.ToString());
-                    shopcart.Add(item.branchName);
-                }
-                shoppingCart cartWindow = new shoppingCart(shopcart);
-                cartWindow.ShowDialog();
-            }
-            else
-            {
-                error = MessageBox.Show("Shopping Cart is Empty");
             }
         }
 
@@ -408,8 +397,11 @@ namespace DQWally_POS
                     {
                         orderLine.Remove(orderLine[i]);
                         flag = true;
-                        error = MessageBox.Show("Item Deleted");
-                    }                   
+                        // Update the shopping cart
+                        #region Shopping Cart View
+                        UpdateCart(orderLine);
+                        #endregion
+                    }
                 }
                 if(flag == false)
                 {
@@ -460,7 +452,10 @@ namespace DQWally_POS
                                         pos.AdjustInventory(Int32.Parse(orderID), item.qty, item.productID);
                                     }
                                 }
+                                // collapse shopping cart
+                                Application.Current.MainWindow.Width = 990;
                                 orderLine.Clear();
+                                dt.Clear();                             
                             }
                         }
                         else
@@ -610,7 +605,12 @@ namespace DQWally_POS
                     {
                         // call orderDetail method and return a dataSet use to show on dataGrid
                         ds = pos.OrderDetail(orderID);
-                        dataGrid.ItemsSource = ds.Tables[0].DefaultView;
+                        if (ds.Tables[0].Rows.Count == 0)
+                        {
+                            error = MessageBox.Show("No Orders Found");
+                            return;
+                        }
+                        dataGrid.ItemsSource = ds.Tables[0].DefaultView;                        
                         OrderID_tb.Text = "";
                     }
                     catch (Exception ex)
@@ -653,6 +653,67 @@ namespace DQWally_POS
             else
             {
                 error = MessageBox.Show("Choose Order ID and Status");
+            }
+        }
+
+
+        /// <summary>
+        /// Update the shopping cart using data table to datagrid
+        /// </summary>
+        /// <param name="orderline">A list or struct</param>
+        /// <returns>Nothing</returns>
+        private void UpdateCart(List<shopCart> orderline)
+        {
+            List<string> shopcart = new List<string>();
+            dt  = new DataTable("ShoppingCart");
+            DataRow row;
+            double totalAll = 0;
+            if (orderLine.Count != 0)
+            {
+
+                // add to a shopcart list
+                foreach (shopCart item in orderLine)
+                {
+                    shopcart.Add(item.productName);
+                    shopcart.Add(item.qty.ToString());
+                    string price = pos.FindProductPrice(item.productID);
+                    shopcart.Add(price);
+                    double total = double.Parse(price) * (item.qty);
+                    shopcart.Add(total.ToString());
+                    shopcart.Add(item.branchName);
+                    totalAll += total;
+                }
+                
+                // Adding a data table to DataGrid
+                dt.Columns.Add("Product Name", typeof(string));
+                dt.Columns.Add("Quantity", typeof(string));
+                dt.Columns.Add("UnitPrice", typeof(string));
+                dt.Columns.Add("Total Price", typeof(string));
+                dt.Columns.Add("Branch", typeof(string));
+                int i = 0;
+                while (i < shopcart.Count)
+                {
+                    row = dt.NewRow();
+                    row["Product Name"] = shopcart[i];
+                    row["Quantity"] = shopcart[++i];
+                    row["UnitPrice"] = shopcart[++i];
+                    row["Total Price"] = shopcart[++i];
+                    row["Branch"] = shopcart[++i];
+                    dt.Rows.Add(row);
+                    i++;
+                }
+                DataView view = new DataView(dt);
+                // Set a DataGrid control's DataSource to the DataView.
+                ShopCart_dg.ItemsSource = view;
+                Money_bk.Text = "$ " + totalAll;
+            }
+            else
+            {
+                dt.Clear();
+                DataView view = new DataView(dt);
+                // Set a DataGrid control's DataSource to the DataView.
+                ShopCart_dg.ItemsSource = view;
+                error = MessageBox.Show("Shopping Cart is Empty");
             }
         }
     }
