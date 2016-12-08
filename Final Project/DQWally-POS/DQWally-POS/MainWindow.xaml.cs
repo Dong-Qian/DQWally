@@ -325,18 +325,7 @@ namespace DQWally_POS
                 if (Int32.TryParse(Qty_tb.Text, out Qty))
                 {
                     if (Qty > 0)
-                    {
-                        pID = Product_cb.SelectedIndex + 1;
-                        // go through the shopping cart and find the the inventory quantity
-                        // if the inventory is less than order quantity, display errors
-                        string inventory = pos.FindProductQuantity(pID);
-                        int pInevntory = Int32.Parse(inventory);
-                        if (pInevntory < Qty)
-                        {
-                            error = MessageBox.Show(Product_cb.Text + "'s stock is too low. Stock: " + pInevntory);
-                            return;
-                        }
-
+                    {                       
                         if (orderLine.Count != 0)
                         {
                             for (int i = 0; i < orderLine.Count; i++)
@@ -348,6 +337,7 @@ namespace DQWally_POS
                                 }
                             }
                         }
+                        pID = Product_cb.SelectedIndex + 1;
                         // Add all infotamtion about the item into the a shopping cart struct
                         shopCart.productID = pID;
                         shopCart.customerID = Int32.Parse(CusID_tb.Text);
@@ -428,6 +418,7 @@ namespace DQWally_POS
                 // shopping cart not empty
                 if (orderLine.Count != 0)
                 {
+                                        
                     // Add orders to data base, status can not be empty            
                     if (!string.IsNullOrEmpty(Status_cb.Text))
                     {
@@ -435,6 +426,22 @@ namespace DQWally_POS
                         // Only allow PAID and PEND
                         if (status != "RFND" && status != "CNCL")
                         {
+                            if(status == "PAID")
+                            {
+                                foreach (shopCart item in orderLine)
+                                {
+                                    int pID = Product_cb.SelectedIndex + 1;
+                                    // go through the shopping cart and find the the inventory quantity
+                                    // if the inventory is less than order quantity, display errors
+                                    string inventory = pos.FindProductQuantity(item.productID);
+                                    int pInevntory = Int32.Parse(inventory);
+                                    if (pInevntory < item.qty)
+                                    {
+                                        error = MessageBox.Show(Product_cb.Text + "'s stock is too low. Stock: " + pInevntory);
+                                        return;
+                                    }
+                                }
+                            }
                             // Create Order
                             ret = pos.PlaceOrders(orderLine[0].customerID, orderLine[0].branchID, status);
                             // Get the Order ID

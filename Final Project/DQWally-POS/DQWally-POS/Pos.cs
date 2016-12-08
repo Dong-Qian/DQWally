@@ -361,27 +361,62 @@ namespace DQWally_POS
                     if ((orignalStatus == "PAID" && status == "RFND") || (orignalStatus == "PEND" && status == "CNCL") ||
                         (orignalStatus == "PEND" && status == "PAID"))
                     {
-                        sql = "update orders set OrderStatus ='" + status + "' where OrdersID =" + OrdersID + ";";
-                        cmd = new MySqlCommand(sql, conn);
-                        cmd.ExecuteNonQuery();
-                        ret = "Order Status Changed";
-
-                        // change the old status to new status
-                        sql = "select ProductID, Quantity from orderline where OrdersID = " + OrdersID + ";";
-                        cmd = new MySqlCommand(sql, conn);
-                        rdr = cmd.ExecuteReader();
+                        #region change from pend to paid                  
                         // from pend to paid, we need to decrease inventory level in the database
                         if (orignalStatus == "PEND" && status == "PAID")
                         {
+                            sql = "select ol.ProductID, ol.Quantity, p.ProductName from orderline ol inner join product p on ol.productID = p.ProductID where OrdersID = " + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            rdr = cmd.ExecuteReader();
+                            while (rdr.Read())
+                            {
+                                int productID = Int32.Parse(rdr[0].ToString());
+                                int qty = Int32.Parse(rdr[1].ToString());
+                                string inventory = FindProductQuantity(productID);
+                                int pInevntory = Int32.Parse(inventory);
+                                if (pInevntory < qty)
+                                {
+                                    ret = "stock is low for " + rdr[2] + "\nCurrent Stock is : " + inventory;
+                                    rdr.Close();
+                                    return ret;
+                                }
+                            }
+                            rdr.Close();
+
+                            // change the old status to new status
+                            sql = "update orders set OrderStatus ='" + status + "' where OrdersID =" + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            cmd.ExecuteNonQuery();
+                            ret = "Order Status Changed";
+
+                            // chnage database inventory
+                            sql = "select ProductID, Quantity from orderline where OrdersID = " + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            rdr = cmd.ExecuteReader();
                             while (rdr.Read())
                             {
                                 this.AdjustInventory(OrdersID, Int32.Parse(rdr[1].ToString()), Int32.Parse(rdr[0].ToString()));
                             }
+                            rdr.Close();
                         }
+                        #endregion
+
                         // from paid to rfnd, we have to increase the inventory level
                         // and zero out  the orderline quantity
+
+                        #region change from paid to rfnd
                         else if (orignalStatus == "PAID" && status == "RFND")
                         {
+                            // change the old status to new status
+                            sql = "update orders set OrderStatus ='" + status + "' where OrdersID =" + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            cmd.ExecuteNonQuery();
+                            ret = "Order Status Changed";
+
+                            // change database inventory
+                            sql = "select ProductID, Quantity from orderline where OrdersID = " + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            rdr = cmd.ExecuteReader();
                             while (rdr.Read())
                             {
                                 this.AdjustInventory(OrdersID, -Int32.Parse(rdr[1].ToString()), Int32.Parse(rdr[0].ToString()));
@@ -389,14 +424,29 @@ namespace DQWally_POS
                             }
                             rdr.Close();
                         }
+                        #endregion
+
+                        #region change from pend to cncl
                         // from pend to cncl, we have to zero out  the orderline quantity
-                        else if(orignalStatus == "PEND" && status == "CNCL")
+                        else if (orignalStatus == "PEND" && status == "CNCL")
                         {
+                            // change the old status to new status
+                            sql = "update orders set OrderStatus ='" + status + "' where OrdersID =" + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            cmd.ExecuteNonQuery();
+                            ret = "Order Status Changed";
+
+                            // change database inventory
+                            sql = "select ProductID, Quantity from orderline where OrdersID = " + OrdersID + ";";
+                            cmd = new MySqlCommand(sql, conn);
+                            rdr = cmd.ExecuteReader();
                             while (rdr.Read())
                             {
                                 this.AdjustOrderLine(OrdersID, Int32.Parse(rdr[0].ToString()), Int32.Parse(rdr[1].ToString()));
                             }
+                            rdr.Close();
                         }
+                        #endregion
                     }
                     else
                     {
